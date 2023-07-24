@@ -23,6 +23,8 @@
 #define LOW_PULSE_LENGTH_IN_TICKS   5    // (unit: ticks) the low-period is 5 (or more) ticks in length, but in total low+high periods can't exceed 12 ticks
 #define FRAME_SYNC_PULSE_IN_TICKS   56   // (unit: ticks) the sync pulse is 56 ticks long
 
+const uint32_t output_pin_reg_select = ((uint32_t)1 << OUTPUT_PIN);
+
 // Define all possible message types
 enum message_type_t {
   not_available = 0,
@@ -107,9 +109,6 @@ void print_welcome_message() {
 // Receive data from serial interface and assemble the frame completely
 void handle_serial_input() {
   uint16_t input;  // Used to fetch serial console input
-
-  Serial.print("got input! count: ");
-  Serial.print(Serial.available());
 
   // Fetch first input number
   input = Serial.parseInt();
@@ -225,8 +224,8 @@ void send_frame() {
 
 // Sends a single pulse to SENT pin (pull LOW for N ticks - usually 5, and rest ticks are HIGH)
 inline void send_pulse(uint16_t total_length_ticks){
-  GPIO.out_w1tc = ((uint32_t)1 << OUTPUT_PIN);                                            // Set pin to LOW
+  GPIO.out_w1tc = output_pin_reg_select;                                                  // Set pin to LOW
   delayMicroseconds(LOW_PULSE_LENGTH_IN_TICKS * TICK_LENGTH_US);                          // Wait for low pulse length
-  GPIO.out_w1ts = ((uint32_t)1 << OUTPUT_PIN);                                            // Set pin to HIGH
-  delayMicroseconds((total_length_ticks - LOW_PULSE_LENGTH_IN_TICKS) * TICK_LENGTH_US);  // Wait for rest of the frame sync pulse time (minus low pulse length)
+  GPIO.out_w1ts = output_pin_reg_select;                                                  // Set pin to HIGH
+  delayMicroseconds((total_length_ticks - LOW_PULSE_LENGTH_IN_TICKS) * TICK_LENGTH_US);   // Wait for rest of the frame sync pulse time (minus low pulse length)
 }
