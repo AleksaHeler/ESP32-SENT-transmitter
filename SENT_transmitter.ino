@@ -218,6 +218,9 @@ void send_frame() {
     send_pulse(data + 12);
   }
 
+  // Send the ending pulse
+  send_pulse(12);
+
   interrupts();
 }
 
